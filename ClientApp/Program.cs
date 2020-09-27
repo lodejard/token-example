@@ -32,6 +32,7 @@ namespace ClientApp
             var configuration = host.Services.GetRequiredService<IConfiguration>();
 
             var backgroundTask = Task.Run(() => BackgroundAsync(configuration["ServerAppUrl"]));
+            var anotherBackgroundTask = Task.Run(() => AnotherBackgroundAsync(configuration["ServerAppUrl"]));
 
             await host.RunAsync();
         }
@@ -54,6 +55,32 @@ namespace ClientApp
 
                     var result = await httpClient.GetStringAsync(serverAppUrl);
                     Console.WriteLine(result);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
+                }
+                await Task.Delay(TimeSpan.FromSeconds(3));
+            }
+        }
+
+        public static async Task AnotherBackgroundAsync(string serverAppUrl)
+        {
+            Console.WriteLine($"Background work starting. Sending requests to {serverAppUrl}");
+
+            while (true)
+            {
+                try
+                {
+                    using var kubernetes = new Kubernetes(KubernetesClientConfiguration.BuildDefaultConfig());
+
+                    var httpRequest = new HttpRequestMessage(HttpMethod.Get, serverAppUrl);
+                    await kubernetes.Credentials.ProcessHttpRequestAsync(httpRequest, default);
+
+                    using var httpClient = new HttpClient();
+                    var result = await httpClient.SendAsync(httpRequest);
+
+                    Console.WriteLine(await result.Content.ReadAsStringAsync());
                 }
                 catch (Exception ex)
                 {
@@ -89,7 +116,7 @@ namespace ClientApp
         }
     }
 
-    internal class CredentialsHandler : DelegatingHandler
+    public class CredentialsHandler : DelegatingHandler
     {
         private ServiceClientCredentials credentials;
 

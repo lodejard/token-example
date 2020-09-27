@@ -1,3 +1,4 @@
+using System;
 using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -68,7 +69,8 @@ namespace ServerApp
 
         public async Task Invoke(HttpContext httpContext)
         {
-            if (AuthenticationHeaderValue.TryParse(httpContext.Request.Headers["Authorization"], out var auth))
+            if (AuthenticationHeaderValue.TryParse(httpContext.Request.Headers["Authorization"], out var auth) &&
+                string.Equals(auth.Scheme, "Bearer", StringComparison.OrdinalIgnoreCase))
             {
                 using var kubernetes = new Kubernetes(KubernetesClientConfiguration.BuildDefaultConfig());
 
