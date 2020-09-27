@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: client
+spec:
+  template:
+    spec:
+      serviceAccountName: client
+      nodeSelector:
+        beta.kubernetes.io/os: linux
+      volumes:
+        - name: src
+          configMap:
+            name: client
+      containers:
+        - name: client
+          image: mcr.microsoft.com/dotnet/core/sdk:3.1
+          volumeMounts:
+            - name: src
+              mountPath: /src
+          workingDir: /app
+          command:
+            - bash
+            - -c
+            - cp /src/* . && dotnet run
+          ports:
+            - containerPort: 5000
+              name: http
+              protocol: TCP
