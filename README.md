@@ -41,7 +41,7 @@ public class CredentialsHandler : DelegatingHandler
 }
 ```
 
-Turning bearer into claims identity on the server.
+Authenticating bearer token on the receiving end.
 ```cs
 if (AuthenticationHeaderValue.TryParse(httpContext.Request.Headers["Authorization"], out var auth) &&
     string.Equals(auth.Scheme, "Bearer", StringComparison.OrdinalIgnoreCase))
